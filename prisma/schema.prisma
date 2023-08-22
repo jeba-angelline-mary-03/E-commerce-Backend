@@ -1,0 +1,112 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model tbl_products{
+    productId Int @id @default(autoincrement())
+    productName String
+    productDisplayName String
+    productSKU String
+    productDescription String
+    categoryID Int? @unique
+    categoryIdKey tbl_category? @relation(fields: [categoryID],references: [categoryId],onDelete: Cascade)
+    productPrice Int
+    stockID Int? @unique
+    stockIDKey tbl_stocks? @relation(fields: [stockID], references: [stockId],onDelete: Cascade)
+    updatedOn DateTime @updatedAt()
+    product_image tbl_images[]
+    order_item tbl_order_item[]
+}
+
+model tbl_category{
+  categoryId Int @id @default(autoincrement())
+  categoryName String
+  Description String
+  updatedOn DateTime @updatedAt()
+  product_category tbl_products[]
+}
+
+model tbl_images{
+  ImageId Int @id @default(autoincrement())
+  ProductID Int @unique
+  productIdKey tbl_products? @relation(fields: [ProductID],references: [productId],onDelete: Cascade)
+  url String
+  imageOrder Int
+  updatedOn DateTime @updatedAt()
+}
+model tbl_stocks{
+    stockId Int @id @default(autoincrement())
+    updatedOn DateTime @updatedAt()
+    actualStockQuantity Int
+    FloatingStockQuantity Int
+    product_stock tbl_products[]
+}
+
+model tbl_order{
+  orderId Int @id @default(autoincrement())
+  userId Int
+  total_amount Int
+  order_date DateTime @updatedAt()
+  status String
+  shipping_address String
+  payment_method String
+  createdOn DateTime @updatedAt
+  order_item tbl_order_item[] 
+  order_payment payment[]
+}
+
+model tbl_order_item{
+  order_item_id Int @id @default(autoincrement())
+  OrderID Int @unique
+  orderIdKey tbl_order? @relation(fields: [OrderID],references: [orderId],onDelete: Cascade)
+  product_id Int @unique
+  product_idKey tbl_products @relation(fields: [product_id],references: [productId],onDelete: Cascade)
+  quantity Int
+}
+
+model payment{
+  payment_id Int @id @default(autoincrement())
+  Orderid Int @unique
+  orderIdKey tbl_order? @relation(fields: [Orderid],references: [orderId],onDelete: Cascade)
+  status String
+}
+model tbl_users_auth{
+  userId Int @id @default(autoincrement())
+  userEmail String 
+  userPassword String 
+  userRole String
+  userStatus String
+  isUserLoggedIn Boolean @default(false)
+  updatedOn DateTime @updatedAt()
+  lastLoggedIn DateTime @updatedAt()
+  otp String
+  otpExpiresAt DateTime @updatedAt()
+  resetPasswordKey Boolean @default(false)
+  resetPasswordKeyExpiresAt DateTime @updatedAt()
+  userProfile tbl_user_profile[]
+}
+
+model tbl_user_profile{
+  userProfileId Int @unique @default(autoincrement())
+  userFirstName String
+  userLastName String
+  street String 
+  city String
+  state String
+  country String
+  zipcode String
+  userProfilePictureUrl String
+  dateOfBirth DateTime
+  phoneNumber String
+  userAuth Int? @unique
+  userAuthKey tbl_users_auth? @relation(fields: [userAuth], references: [userId],onDelete: Cascade)
+}
+
